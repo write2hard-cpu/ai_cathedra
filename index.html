@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Программы ИИ 2026</title>
+<style>
+:root{
+  --bg:#f6f6f8; --surface:#ffffff; --ink:#171b2b; --muted:#60677c; --line:#e0e3ea; --hover:#f0f2f7;
+  --accent:#2350d8; --accent-soft:#e7edfd;
+  --past:#6b7285; --past-soft:#eceef3;
+  --run:#17794a; --run-soft:#e3f5ec;
+  --plan:#2a6fb0; --plan-soft:#e4eff9;
+  --ext:#6a4aa8; --ext-soft:#efeafa;
+  --park:#8a6d3b; --park-soft:#f6efe2;
+  --tbd:#a85c0a; --tbd-soft:#fbf0e0;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1120; --surface:#161a2b; --ink:#e7e9f2; --muted:#9aa1b7; --line:#2a3046; --hover:#1c2236;
+  --accent:#8aa4ff; --accent-soft:#1d2752;
+  --past:#a3a9bb; --past-soft:#252a3a;
+  --run:#6fd49c; --run-soft:#14321f;
+  --plan:#7ab8ef; --plan-soft:#162b40;
+  --ext:#c4a6f0; --ext-soft:#2a2040;
+  --park:#d9b77c; --park-soft:#2e2615;
+  --tbd:#f0b060; --tbd-soft:#38280f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1120; --surface:#161a2b; --ink:#e7e9f2; --muted:#9aa1b7; --line:#2a3046; --hover:#1c2236;
+  --accent:#8aa4ff; --accent-soft:#1d2752;
+  --past:#a3a9bb; --past-soft:#252a3a;
+  --run:#6fd49c; --run-soft:#14321f;
+  --plan:#7ab8ef; --plan-soft:#162b40;
+  --ext:#c4a6f0; --ext-soft:#2a2040;
+  --park:#d9b77c; --park-soft:#2e2615;
+  --tbd:#f0b060; --tbd-soft:#38280f; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 16px 56px}
+h1{font-size:26px;letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance}
+.sub{color:var(--muted);margin:0;max-width:72ch}
+.kpis{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 6px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;min-width:132px}
+.kpi b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12.5px;color:var(--muted)}
+.kpi.me{border-color:var(--accent)}
+.kpi.me b{color:var(--accent)}
+.note{font-size:13.5px;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:10px;padding:10px 12px;margin:12px 0}
+.note b{color:var(--tbd)}
+.bar{position:sticky;top:0;z-index:3;background:var(--bg);display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);margin-top:10px}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;flex-wrap:wrap;gap:2px}
+.seg button{border:0;background:transparent;color:var(--muted);font-size:14px;font-weight:500;padding:7px 12px;border-radius:7px;cursor:pointer;font-family:inherit}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button.me[aria-pressed="true"]{background:var(--accent);color:#fff}
+button:focus-visible,tr.row:focus-visible,.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hidden{display:none !important}
+
+/* calendar */
+.cal-head{display:flex;align-items:center;gap:10px;margin:18px 0 10px;flex-wrap:wrap}
+.cal-head h2{font-size:19px;margin:0 8px 0 0;min-width:170px;text-transform:capitalize}
+.iconbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink);width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:16px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--muted);margin:4px 0 12px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-2px;margin-right:6px}
+.lg-run{background:var(--run-soft);border:1px solid var(--run)}
+.lg-plan{background:var(--plan-soft);border:1px solid var(--plan)}
+.lg-ext{background:var(--ext-soft);border:1px solid var(--ext)}
+.lg-tbd{background:var(--tbd-soft);border:1px dashed var(--tbd)}
+.runbar{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.runrow{display:flex;align-items:center;gap:10px;font-size:13px}
+.runrow .lbl{min-width:0;flex:0 1 260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.runrow .track{flex:1;position:relative;height:22px;background:var(--surface);border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.runrow .fill{position:absolute;top:0;bottom:0;background:var(--run-soft);border-left:3px solid var(--run);border-right:0;display:flex;align-items:center;padding:0 8px;font-size:12px;color:var(--run);white-space:nowrap;overflow:hidden}
+.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.dow{padding:8px 6px;font-size:12px;color:var(--muted);font-weight:600;text-align:center;letter-spacing:.03em;border-bottom:1px solid var(--line);background:var(--bg)}
+.day{min-height:104px;padding:6px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:4px;min-width:0}
+.day:nth-child(7n){border-right:0}
+.day.out{background:var(--bg);opacity:.45}
+.day.today .num{background:var(--accent);color:#fff}
+.num{font-size:12.5px;font-weight:600;color:var(--muted);width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-variant-numeric:tabular-nums}
+.chip{display:block;width:100%;text-align:left;border:1px solid transparent;border-left:3px solid;border-radius:6px;padding:3px 6px;font-size:12px;font-weight:500;line-height:1.3;font-family:inherit;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);background:transparent}
+.chip.run{background:var(--run-soft);border-left-color:var(--run)}
+.chip.plan{background:var(--plan-soft);border-left-color:var(--plan)}
+.chip.ext{background:var(--ext-soft);border-left-color:var(--ext)}
+.chip.tbd{background:var(--tbd-soft);border:1px dashed var(--tbd);border-left:3px dashed var(--tbd)}
+.chip.mine::after{content:"•";color:var(--accent);margin-left:4px;font-weight:700}
+.chip .t{color:var(--muted);font-variant-numeric:tabular-nums;margin-right:4px}
+.more{font-size:11.5px;color:var(--muted);padding-left:4px}
+.nodate{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px}
+.nodate h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.nodate ul{margin:0;padding-left:18px}
+.nodate li{margin:3px 0}
+
+/* list */
+.wrapper{overflow-x:auto;margin-top:14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;min-width:920px}
+th{position:sticky;top:0;text-align:left;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:11px 12px;background:var(--surface);border-bottom:1px solid var(--line)}
+td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
+tr.row{cursor:pointer}
+tr.row:hover td{background:var(--hover)}
+tr.group td{background:var(--bg);font-weight:700;font-size:12.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);padding:9px 12px;cursor:default}
+tr.past td{color:var(--muted)}
+tr.past .pname{color:var(--muted)}
+.dt{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+.tbdcell{background:var(--tbd-soft)}
+.tbd-tag{display:inline-block;margin-top:5px;font-size:11.5px;font-weight:700;color:var(--tbd);border:1px solid var(--tbd);border-radius:6px;padding:0 6px;white-space:nowrap}
+.pname{font-weight:600;font-size:14.5px;line-height:1.3}
+.cust{font-size:13px;margin-top:4px}
+.cust span{color:var(--muted)}
+.aud{font-size:12.5px;color:var(--muted);margin-top:2px}
+.badge{display:inline-block;font-size:12.5px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.s-past{background:var(--past-soft);color:var(--past)}
+.s-run{background:var(--run-soft);color:var(--run)}
+.s-plan{background:var(--plan-soft);color:var(--plan)}
+.s-ext{background:var(--ext-soft);color:var(--ext)}
+.s-park{background:var(--park-soft);color:var(--park)}
+.acc{display:inline-block;font-size:11.5px;margin-top:5px;padding:1px 7px;border-radius:6px;border:1px solid var(--line);color:var(--muted)}
+.role{font-size:13.5px}
+.role .tag{display:inline-block;font-size:11.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:1px 7px;border-radius:6px;margin-bottom:4px;letter-spacing:.02em}
+tr.mine td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.muted{color:var(--muted)}
+
+/* sheet */
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);padding:0;width:min(640px,calc(100vw - 24px));max-height:88vh}
+dialog::backdrop{background:rgba(10,12,22,.45)}
+.sheet{padding:18px 20px 20px;overflow:auto;max-height:88vh}
+.sheet h3{margin:0 0 6px;font-size:18px;line-height:1.3}
+.sheet .close{float:right;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:9px;padding:4px 10px;cursor:pointer;font-family:inherit}
+.det{display:grid;grid-template-columns:130px minmax(0,1fr);gap:8px 14px;margin:14px 0 0}
+.det dt{color:var(--muted);font-size:13.5px}
+.det dd{margin:0;font-size:14px}
+.mlist{margin:0;padding-left:18px}
+.next{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:14px;font-size:14px}
+.empty{padding:26px;text-align:center;color:var(--muted)}
+footer{margin-top:22px;font-size:13px;color:var(--muted)}
+@media (max-width:760px){
+  h1{font-size:22px}
+  .day{min-height:76px;padding:4px}
+  .chip{font-size:10.5px;padding:2px 4px}
+  .chip .t{display:none}
+  .dow{font-size:10.5px;padding:6px 2px}
+  .runrow .lbl{flex-basis:120px}
+  .det{grid-template-columns:1fr;gap:2px}
+  .det dd{margin-bottom:8px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Программы ИИ-обучения до конца 2026 года</h1>
+  <p class="sub">Календарь предстоящих программ, их статусы, заказчики, даты и ваша роль. Нажмите на программу, чтобы открыть детали. Пунктирные рамки — даты, которые ещё не подтверждены.</p>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="note"><b>Отпуск 21.10–03.11.</b> Программа 30.10 (агентный ИИ для HR) попадает в отпуск: коммуникации и передачу нужно закрыть до 20.10.</div>
+
+  <div class="bar" role="toolbar" aria-label="Вид и фильтры">
+    <div class="seg" role="group" aria-label="Вид">
+      <button id="v-cal" data-view="cal" aria-pressed="true">Календарь</button>
+      <button id="v-list" data-view="list" aria-pressed="false">Список</button>
+    </div>
+    <div class="seg" role="group" aria-label="Роль">
+      <button id="m-me" class="me" data-me="1" aria-pressed="false">Где я задействован</button>
+    </div>
+  </div>
+
+  <!-- CALENDAR VIEW -->
+  <section id="view-cal">
+    <div class="cal-head">
+      <button class="iconbtn" id="prev" aria-label="Предыдущий месяц">‹</button>
+      <h2 id="monthTitle"></h2>
+      <button class="iconbtn" id="next" aria-label="Следующий месяц">›</button>
+    </div>
+    <div class="legend">
+      <span><i class="lg-run"></i>Идёт</span>
+      <span><i class="lg-plan"></i>Запланирована</span>
+      <span><i class="lg-ext"></i>Внешний заказчик</span>
+      <span><i class="lg-tbd"></i>Дата не подтверждена</span>
+      <span>• ваша роль</span>
+    </div>
+    <div class="runbar" id="runbar"></div>
+    <div class="grid" id="grid"></div>
+    <div class="nodate" id="nodate"></div>
+  </section>
+
+  <!-- LIST VIEW -->
+  <section id="view-list" class="hidden">
+    <div class="wrapper">
+      <table>
+        <thead>
+          <tr><th style="width:130px">Дата</th><th>Программа и заказчик</th><th style="width:150px">Этап</th><th>Спикеры</th><th style="width:230px">Моя роль</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>Обновлено на 19.10. Страница не сохраняет изменения: правки вносите в план-документе «План ИИ-обучений».</footer>
+</div>
+
+<dialog id="sheet"><div class="sheet" id="sheetBody"></div></dialog>
+
+<script>
+const TODAY = '2026-10-19';
+const STAGE = {past:['Прошла','s-past'], run:['Идёт','s-run'], plan:['Запланирована','s-plan'], ext:['Внешний заказчик','s-ext'], park:['Отложена на 2027','s-park']};
+const GROUP = {run:'Идут сейчас', plan:'Запланированы', ext:'Внешние запросы (КП отправлены)', park:'Отложены на 2027 (вне плана 2026)', past:'Прошедшие'};
+const ORDER = ['past','run','plan','ext','park'];
+
+/* kind: which colour in the calendar; days: dates shown; span: running range */
+const P = [
+ {id:'rp', stage:'past', name:'ИИ для руководителей проектов', date:'30.09–13.10', sort:'2026-09-30', tbd:false, short:'ИИ для РП',
+  cust:'Функция ПиПУ (Токаревских А.А.)', aud:'РП, администраторы проектов, портфелей и программ (~500)', acc:'Группа ПиПУ',
+  fmt:'Гибрид: Невская ратуша + трансляция; 3 блока по ~3 ч', spk:'Котежеков, Романова, Черницын, Налбандян, Дождев, Вишняков, Зоткин, Лукинчик, Панов',
+  roman:'Блок 3, дискуссия 13.10 (с ~12:00): вопросы по ИБ и барьерам', next:'Программа завершилась 13.10; обратная связь заказчику'},
+ {id:'put', stage:'run', name:'Путеводитель по миру ИИ', date:'12.10–12.11', sort:'2026-10-12', tbd:false, short:'Путеводитель', span:['2026-10-12','2026-11-12'],
+  cust:'—', aud:'Все сотрудники', acc:'Открытая запись',
+  fmt:'Онлайн, 5 модулей по неделе: вебинар 1,5 ч + видеолекции и задания', spk:'Котежеков, Романова, Кертлинг, Калюжная и внешние эксперты',
+  roman:null, next:'Ссылку на программу отправлять помощникам, HR и референтам как входной курс'},
+ {id:'n8n', stage:'run', name:'n8n: разработка ИИ-агентов для автоматизации процессов', date:'12.10–27.10', sort:'2026-10-12', tbd:false, short:'n8n: ИИ-агенты', span:['2026-10-12','2026-10-27'],
+  cust:'—', aud:'ИТ-специалисты, CDS, low-code', acc:'Запись через ИПР',
+  fmt:'Онлайн, модульная программа с итоговым проектом', spk:'—', roman:null, next:'—'},
+ {id:'itmk', stage:'run', name:'Мастер-классы по ИИ для ИТ-специалистов', date:'12.10–06.11', sort:'2026-10-12', tbd:false, short:'МК для ИТ', span:['2026-10-12','2026-11-06'],
+  cust:'—', aud:'Data Scientists, ML, MLOps, архитекторы', acc:'Запись через ИПР',
+  fmt:'Онлайн: мультиагентные системы 12–15.10; MLOps 2, 3, 5, 6.11', spk:'—', roman:null, next:'—'},
+
+ {id:'vibe', stage:'plan', name:'Вайбкодинг: от теории агентов до мультиагентных систем', date:'22.10', sort:'2026-10-22', tbd:false, short:'Вайбкодинг', days:['2026-10-22'],
+  cust:'—', aud:'Все сотрудники', acc:'Открытая запись',
+  fmt:'Онлайн, тренинг. Проводит внешний подрядчик — Лекториум', spk:'Лекториум (внешний подрядчик)', roman:null,
+  next:'Проверить ссылку на запись на Портале знаний; разослать коллегам до 20.10'},
+ {id:'hr30', stage:'plan', name:'Агентный ИИ для HR-функции (с практикой)', date:'30.10', sort:'2026-10-30', tbd:false, short:'Агентный ИИ для HR', days:['2026-10-30'],
+  cust:'Ирина Похно, Регина Крючкова (HR)', aud:'HR (уточнить состав группы)', acc:'Группа HR (другой запрос)',
+  fmt:'С практикой. Формат и площадка — уточнить у заказчика', spk:'Уточнить', roman:'Коммуникации уходят от ФЦТ: проверяете рассылку и ссылку до 20.10',
+  next:'Согласовать с заказчиком программу, спикера и площадку; рассылку отправить от ФЦТ. 30.10 — во время вашего отпуска: передать контакт заместителю'},
+ {id:'mk', stage:'plan', name:'Мастер-классы по ИИ для пользователей', date:'19.11–17.12', sort:'2026-11-19', tbd:false, short:'Мастер-классы', days:['2026-11-19','2026-11-26','2026-12-03','2026-12-10','2026-12-17'],
+  cust:'Подрядчик — Софтлайн', aud:'Все сотрудники', acc:'Открытая запись',
+  fmt:'Практические мастер-классы, 5 занятий. Вашего участия не требуется', spk:'Софтлайн (подрядчик)', roman:null, next:'—',
+  masterclasses:[
+    ['19.11, 11:45–14:00','Анализ документов'],
+    ['26.11, 11:45–14:00','Подготовка аналитических отчётов'],
+    ['03.12, 11:45–14:00','Разработка и защита гипотез по внедрению ИИ'],
+    ['10.12, 11:45–14:00','ИИ: технологии, аналитика и тренды для бизнеса'],
+    ['17.12, 11:45–14:00','Машинное и глубокое обучение: основы для бизнеса']]},
+ {id:'ref', stage:'plan', name:'ИИ для помощников и референтов: «Просто о сложном»', date:'~10.11 (плавающая)', sort:'2026-11-10', tbd:true, short:'Референты ≈10.11', days:['2026-11-10'],
+  cust:'Функция помощников и секретариата (Оксана)', aud:'Помощники, референты, секретари ПАО и ДО', acc:'Группа функции помощников',
+  fmt:'Гибрид: ~20 очно (Почтамтская, 3 эт.) + онлайн 50–60; 1–1,5 ч с вопросами', spk:'Артём Велюго (GPN AI); опционально Клушин (TrueConf)',
+  roman:'Организатор: программа, площадка, связь с Велюго и Романовой', next:'Заказчик присылает кейсы, Велюго готовит выступление; Велюго добавляет инструкцию по транскрибации (TrueConf); ждём финальную дату от коллег, затем рассылка от ФЦТ'},
+ {id:'hr', stage:'plan', name:'GPN AI для HR-функции', date:'17.11, 10:00–13:00 (предложено)', sort:'2026-11-17', tbd:true, short:'GPN AI для HR', days:['2026-11-17'],
+  cust:'Мараева Мария (HR)', aud:'HR департамента и ДО', acc:'Группа HR',
+  fmt:'Онлайн, 3 ч, из них ~1 ч вопросы', spk:'Артём Велюго (GPN AI)', roman:'Организатор: уточнить запрос, формат, организацию и дату',
+  next:'Встреча 20.10 с Мараевой и Велюго: уточнить запрос, формат, организацию и дату. Дата 17.11 пока только предложена'},
+ {id:'bgi', stage:'plan', name:'Агентный ИИ «Доктор-1» (БГИ)', date:'17–18.11 (предложено, было 20.11)', sort:'2026-11-17', tbd:true, short:'Доктор-1 (БГИ)', days:['2026-11-17','2026-11-18'],
+  cust:'Доктор С. и Бондарева Анна (БГИ)', aud:'Сотрудники «Доктор-1»', acc:'Группа БГИ',
+  fmt:'1 день: теория + практика; практику оплачивает БГИ через подрядчика', spk:'Анна Калюжная', roman:'Переговоры с заказчиком, договор с подрядчиком',
+  next:'Встреча 20.10: оргмоменты, коммуникации, договор с подрядчиком. Дата не определена, предлагаем 17–18.11 вместо 20.11'},
+ {id:'corp', stage:'plan', name:'ИИ в работе корпоративного университета', date:'26.11, 10:00–18:00', sort:'2026-11-26', tbd:false, short:'ИИ в работе КУ', days:['2026-11-26'],
+  cust:'Корпоративный университет (ректор Дементьев И.А.)', aud:'Сотрудники КУ, группа до 25', acc:'По запросу ректора КУ',
+  fmt:'Очно, 1 день, 8 ч. Программу готовит КУ, мы подключаем спикеров', spk:'Виктор Котежеков (30 мин, в начале); Анна Калюжная (1,5 ч, в конце); Роман Марченко; программа КУ: Варламов, Юханин (Зерокодер)',
+  roman:'Спикер; связка программы с Котежековым и Калюжной', next:'Согласовать слоты Котежекова и Калюжной и программу с КУ до 30.10. Модуль 1 курса 26.11 снят с плана, конфликта больше нет'},
+ {id:'kron', stage:'plan', name:'Агентный ИИ и цифровые инструменты ГПН — на практике (Кронштадт)', date:'30.11', sort:'2026-11-30', tbd:false, short:'Кронштадт', days:['2026-11-30'],
+  cust:'ДИТАТ и ДЦТ', aud:'Руководители ДИТАТ и ДЦТ, 45 человек', acc:'Группа ДИТАТ/ДЦТ',
+  fmt:'Очно, ИЦ «Кронштадт», весь день, личные ноутбуки', spk:'Анна Калюжная, Думин, Третьяк, модератор',
+  roman:'Координация: программа, ноутбуки, площадка; внутренняя встреча с Калюжной', next:'Решить по ноутбукам (свои или по ТЗ) и кто платит — до 20.10; бронь площадки; проверить Wi-Fi до 03.11; кейсы участникам до 13.11'},
+ {id:'ext-ref', stage:'ext', name:'Агентный ИИ для ЕвроХим', date:'декабрь 2026 (предложено)', sort:'2026-12-15', tbd:true, short:'ЕвроХим', noDate:'dec',
+  cust:'ЕвроХим (внешний заказчик)', aud:'Уточняется заказчиком', acc:'По запросу заказчика',
+  fmt:'КП отправлено, ждём ответ. Предложено провести в декабре 2026', spk:'Уточнить', roman:'Ведём запрос: КП отправлено, ждём ответ',
+  next:'Дождаться ответа ЕвроХим; согласовать дату, аудиторию и формат'},
+ {id:'ext-gov', stage:'ext', name:'Агентный ИИ для Правительства Москвы', date:'2027 год (предложено)', sort:'2027-01-01', tbd:true, short:'Правительство Москвы', noDate:'2027',
+  cust:'Правительство Москвы (внешний заказчик)', aud:'Уточняется заказчиком', acc:'По запросу заказчика',
+  fmt:'КП отправлено, ждём ответ. Предложено провести в 2027 году', spk:'Уточнить', roman:'Ведём запрос: КП отправлено, ждём ответ',
+  next:'Дождаться ответа Правительства Москвы; согласовать сроки на 2027 год, аудиторию и формат'},
+ {id:'ib', stage:'plan', name:'ИИ для функции информационной безопасности (пилот)', date:'февраль 2027', sort:'2027-02-01', tbd:true, short:'ИИ для ИБ', noDate:'2027',
+  cust:'Синельников М.А. (ИБ)', aud:'Функция ИБ, ~1 500 человек', acc:'Группа ИБ',
+  fmt:'Формат не определён; пилот — «взаимное погружение»', spk:'Не определены', roman:'Организатор встречи 10–13.11',
+  next:'Решить на встрече 10–13.11: формат и состав. Попросить заказчика описать ожидания'},
+
+ {id:'m3c', stage:'park', name:'3-модульный курс по ИИ (Модули 1–3)', date:'26.11 / 17.12 / 21.01.2027', sort:'2027-01-21', tbd:true, short:'3-модульный курс', noDate:'park',
+  cust:'Все сотрудники (массовый курс)', aud:'Все сотрудники', acc:'Открытая запись',
+  fmt:'Онлайн, 3 модуля по 1,5 ч с вопросами. Сейчас под вопросом, возможен перенос на 2027', spk:'Котежеков (М1), Велюго (М2), Калюжная (М3)',
+  roman:'Куратор курса (сохраняется информация)', next:'Вне плана 2026. Решить про перенос на 2027. Информацию о курсе сохраняем',
+  modules:[
+    ['Модуль 1, 26.11','ИИ в целом и инженерный ИИ в ГПН (Котежеков)'],
+    ['Модуль 2, 17.12','GPN AI и ИИ-ассистенты (Велюго)'],
+    ['Модуль 3, 21.01.2027','Тренды ИИ и агентный ИИ (Калюжная)']]},
+ {id:'zap', stage:'park', name:'Агентный ИИ на кейсах отрасли (Заполярье, Тюмень)', date:'10.12 (предв.)', sort:'2026-12-10', tbd:true, short:'Заполярье', noDate:'park',
+  cust:'Заполярье (Семионенко А.)', aud:'Сотрудники Заполярья', acc:'Группа Заполярья',
+  fmt:'Очно, Тюмень, 1 день; практика на их кейсах, оборудование по нашему ТЗ', spk:'Анна Калюжная, Роман Марченко (практика)',
+  roman:'Практика вместе с Калюжной; координация', next:'Вне плана 2026. Ждём решения заказчика; информацию сохраняем'}
+];
+
+const byId = Object.fromEntries(P.map(p => [p.id, p]));
+const state = {view:'cal', me:false, stage:'all', month:9}; // month index: 9 = October 2026
+const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const iso = (y,m,d) => `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+const YEAR = 2026;
+
+function kpis(){
+  const upcoming = P.filter(p => p.stage !== 'past' && p.stage !== 'park');
+  document.getElementById('kpis').innerHTML =
+    `<div class="kpi"><b>${upcoming.length}</b><span>программ до конца года</span></div>`+
+    `<div class="kpi"><b>${P.filter(p=>p.stage==='run').length}</b><span>идут сейчас</span></div>`+
+    `<div class="kpi"><b>${upcoming.filter(p=>p.tbd).length}</b><span>без подтверждённой даты</span></div>`+
+    `<div class="kpi"><b>${P.filter(p=>p.stage==='ext').length}</b><span>внешних запроса</span></div>`+
+    `<div class="kpi me"><b>${P.filter(p=>p.roman && p.stage!=='past').length}</b><span>где вы задействованы</span></div>`;
+}
+
+/* ---------- calendar ---------- */
+function eventsOn(dateStr){
+  return P.filter(p => p.days && p.days.includes(dateStr) && p.stage!=='park' && p.stage!=='past')
+          .filter(p => !state.me || p.roman);
+}
+function chipClass(p){
+  if(p.stage==='run') return 'run';
+  if(p.stage==='ext') return 'ext';
+  if(p.tbd) return 'tbd';
+  return 'plan';
+}
+function chip(p, dateStr){
+  const t = p.id==='mk' ? '' : '';
+  const time = (p.id==='mk') ? '' : '';
+  return `<button class="chip ${chipClass(p)} ${p.roman?'mine':''}" data-open="${p.id}" data-day="${dateStr}" title="${esc(p.name)}">${esc(p.short)}</button>`;
+}
+
+function renderRunbar(){
+  const runs = P.filter(p => p.span && (!state.me || p.roman));
+  const first = iso(YEAR,state.month,1);
+  const last = iso(YEAR,state.month,new Date(Date.UTC(YEAR,state.month+1,0)).getUTCDate());
+  const rows = runs.filter(p => p.span[0] <= last && p.span[1] >= first);
+  document.getElementById('runbar').innerHTML = rows.length ? rows.map(p => {
+    const s = p.span[0] < first ? 1 : +p.span[0].slice(8)  ;
+    const startDay = p.span[0] < first ? 1 : +p.span[0].slice(8);
+    const endDay = p.span[1] > last ? new Date(Date.UTC(YEAR,state.month+1,0)).getUTCDate() : +p.span[1].slice(8);
+    const dim = new Date(Date.UTC(YEAR,state.month+1,0)).getUTCDate();
+    const left = ((startDay-1)/dim*100).toFixed(2), width = ((endDay-startDay+1)/dim*100).toFixed(2);
+    return `<div class="runrow"><div class="lbl" title="${esc(p.name)}">${p.roman?'• ':''}${esc(p.name)}</div>`+
+           `<div class="track"><button class="fill" data-open="${p.id}" style="left:${left}%;width:${width}%;border:0;cursor:pointer;font:inherit" title="${esc(p.date)}">${esc(p.date)}</button></div></div>`;
+  }).join('') : '';
+}
+
+function renderCal(){
+  const y = YEAR, m = state.month;
+  document.getElementById('monthTitle').textContent = `${MONTHS[m]} ${y}`;
+  const first = new Date(Date.UTC(y,m,1));
+  const offset = (first.getUTCDay()+6)%7; // Monday first
+  const days = new Date(Date.UTC(y,m+1,0)).getUTCDate();
+  const prevDays = new Date(Date.UTC(y,m,0)).getUTCDate();
+  let html = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(d=>`<div class="dow">${d}</div>`).join('');
+  const total = Math.ceil((offset+days)/7)*7;
+  for(let i=0;i<total;i++){
+    let dNum, ds, out=false;
+    if(i<offset){ dNum = prevDays-offset+i+1; ds = iso(y,m-1,dNum); out=true; }
+    else if(i>=offset+days){ dNum = i-offset-days+1; ds = iso(y,m+1,dNum); out=true; }
+    else { dNum = i-offset+1; ds = iso(y,m,dNum); }
+    const list = eventsOn(ds);
+    const shown = list.slice(0,3).map(p=>chip(p,ds)).join('');
+    const more = list.length>3 ? `<div class="more">+ ещё ${list.length-3}</div>` : '';
+    html += `<div class="day ${out?'out':''} ${ds===TODAY?'today':''}"><span class="num">${dNum}</span>${shown}${more}</div>`;
+  }
+  document.getElementById('grid').innerHTML = html;
+  renderRunbar();
+  // no-date block for this month
+  const nd = P.filter(p => p.noDate && p.stage!=='past' && p.stage!=='park' && (!state.me || p.roman));
+  const monthKey = m===11 ? 'dec' : null;
+  const list = nd.filter(p => p.noDate==='dec' ? m===11 : false);
+  const box = document.getElementById('nodate');
+  const parts = [];
+  if(list.length) parts.push(`<h3>${MONTHS[m]}: без точной даты</h3><ul>${list.map(p=>`<li><button class="chip ext tbd-inline" data-open="${p.id}" style="display:inline;border:0;padding:0;background:none;color:var(--ink);text-decoration:underline;cursor:pointer;font:inherit">${esc(p.name)}</button> — ${esc(p.date)}</li>`).join('')}</ul>`);
+  const later = nd.filter(p => p.noDate==='2027' && state.month>=9);
+  if(later.length) parts.push(`<h3>В 2027 году</h3><ul>${later.map(p=>`<li><button data-open="${p.id}" style="border:0;padding:0;background:none;color:var(--ink);text-decoration:underline;cursor:pointer;font:inherit">${esc(p.name)}</button> — ${esc(p.date)}</li>`).join('')}</ul>`);
+  box.innerHTML = parts.join('');
+  box.classList.toggle('hidden', !parts.length);
+}
+
+/* ---------- list ---------- */
+function visible(){
+  return P.filter(p => (state.stage==='all' || p.stage===state.stage) && (!state.me || p.roman))
+          .sort((a,b) => ORDER.indexOf(a.stage)-ORDER.indexOf(b.stage) || (a.sort<b.sort?-1:a.sort>b.sort?1:0));
+}
+function row(p){
+  const [label, cls] = STAGE[p.stage];
+  const dateCell = `<td class="dt ${p.tbd?'tbdcell':''}">${esc(p.date)}${p.tbd?'<br><span class="tbd-tag">Не подтверждено</span>':''}</td>`;
+  const roleCell = p.roman ? `<div class="role"><span class="tag">ВЫ</span><br>${esc(p.roman)}</div>` : `<span class="muted role">—</span>`;
+  return `<tr class="row ${p.stage==='past'?'past':''} ${p.roman?'mine':''}" tabindex="0" data-open="${p.id}">
+    ${dateCell}
+    <td><div class="pname">${esc(p.name)}</div><div class="cust"><span>Заказчик:</span> ${esc(p.cust)}</div><div class="aud">${esc(p.aud)}</div><span class="acc">${esc(p.acc)}</span></td>
+    <td><span class="badge ${cls}">${label}</span></td>
+    <td class="role">${esc(p.spk)}</td>
+    <td>${roleCell}</td></tr>`;
+}
+function renderList(){
+  const list = visible(); let html=''; let last='';
+  if(!list.length){ document.getElementById('rows').innerHTML='<tr><td colspan="5" class="empty">Нет программ под этот фильтр.</td></tr>'; }
+  else {
+    list.forEach(p => {
+      if(p.stage!==last){ html += `<tr class="group"><td colspan="5">${esc(GROUP[p.stage])}</td></tr>`; last=p.stage; }
+      html += row(p);
+    });
+    document.getElementById('rows').innerHTML = html;
+  }
+}
+
+/* ---------- sheet ---------- */
+function openSheet(id, day){
+  const p = byId[id]; if(!p) return;
+  const [label] = STAGE[p.stage];
+  const when = day && p.days && p.days.length>1 ? `<dt>Дата дня</dt><dd>${esc(day.slice(8)+'.'+day.slice(5,7))}</dd>` : '';
+  const mk = p.masterclasses ? `<dt>Мастер-классы</dt><dd><ul class="mlist">${p.masterclasses.map(m=>`<li><b>${esc(m[0])}</b> — ${esc(m[1])}</li>`).join('')}</ul></dd>` : '';
+  const mods = p.modules ? `<dt>Модули</dt><dd><ul class="mlist">${p.modules.map(m=>`<li><b>${esc(m[0])}</b> — ${esc(m[1])}</li>`).join('')}</ul></dd>` : '';
+  document.getElementById('sheetBody').innerHTML = `
+    <button class="close" data-close="1">Закрыть</button>
+    <span class="badge ${STAGE[p.stage][1]}">${label}</span>
+    <h3 style="margin-top:10px">${esc(p.name)}</h3>
+    <div class="muted" style="font-size:14px">${esc(p.date)}</div>
+    <dl class="det">
+      <dt>Заказчик</dt><dd>${esc(p.cust)}</dd>
+      <dt>Аудитория</dt><dd>${esc(p.aud)}</dd>
+      <dt>Формат</dt><dd>${esc(p.fmt)}</dd>
+      <dt>Спикеры</dt><dd>${esc(p.spk)}</dd>
+      <dt>Запись</dt><dd>${p.acc==='Открытая запись'?'Открытая: Портал знаний, все сотрудники':'Закрытая: '+esc(p.acc)}</dd>
+      <dt>Ваша роль</dt><dd>${p.roman?esc(p.roman):'Не задействованы'}</dd>
+      ${when}${mk}${mods}
+    </dl>
+    <div class="next"><b>Следующий шаг:</b> ${esc(p.next)}</div>`;
+  document.getElementById('sheet').showModal();
+}
+
+/* ---------- wiring ---------- */
+function setView(v){
+  state.view = v;
+  document.getElementById('view-cal').classList.toggle('hidden', v!=='cal');
+  document.getElementById('view-list').classList.toggle('hidden', v!=='list');
+  document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', state.view===b.dataset.view));
+  render();
+}
+function render(){
+  if(state.view==='cal') renderCal(); else renderList();
+  document.querySelectorAll('[data-me]').forEach(b => b.setAttribute('aria-pressed', state.me));
+}
+
+document.addEventListener('click', ev => {
+  const close = ev.target.closest('[data-close]'); if(close){ document.getElementById('sheet').close(); return; }
+  const o = ev.target.closest('[data-open]'); if(o){ openSheet(o.dataset.open, o.dataset.day); return; }
+  const v = ev.target.closest('[data-view]'); if(v){ setView(v.dataset.view); return; }
+  const m = ev.target.closest('[data-me]'); if(m){ state.me=!state.me; render(); return; }
+  if(ev.target.id==='prev'){ state.month=Math.max(9,state.month-1); render(); return; }
+  if(ev.target.id==='next'){ state.month=Math.min(11,state.month+1); render(); return; }
+});
+document.addEventListener('keydown', ev => {
+  if((ev.key==='Enter'||ev.key===' ') && ev.target.matches && ev.target.matches('tr.row')){ ev.preventDefault(); openSheet(ev.target.dataset.open); }
+});
+document.getElementById('sheet').addEventListener('click', ev => { if(ev.target.id==='sheet') ev.target.close(); });
+
+kpis(); setView('cal');
+</script>
+</body>
+</html>
